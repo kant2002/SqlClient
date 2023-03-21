@@ -950,7 +950,7 @@ namespace System {
                 return ResourceManager.GetString("Data_InvalidOffsetLength", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Internal error occurred when retrying the download of the HGS root certificate after the initial request failed. Contact Customer Support Services..
         /// </summary>
@@ -1915,7 +1915,7 @@ namespace System {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Incorrect physicalConnection type.
+        ///   Looks up a localized string similar to Incorrect physicalConnection type..
         /// </summary>
         internal static string SNI_IncorrectPhysicalConnectionType {
             get {
@@ -3189,6 +3189,15 @@ namespace System {
         internal static string SQL_SqlServerBrowserNotAccessible {
             get {
                 return ResourceManager.GetString("SQL_SqlServerBrowserNotAccessible", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to SqlXml column type support disabled via &apos;Switch.Microsoft.Data.SqlClient.SqlXmlSupport&apos; switch..
+        /// </summary>
+        internal static string SQL_SqlXmlColumnSupportDisabled {
+            get {
+                return ResourceManager.GetString("SQL_SqlXmlColumnSupportDisabled", resourceCulture);
             }
         }
         

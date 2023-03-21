@@ -1069,12 +1069,7 @@ namespace Microsoft.Data.SqlClient
                     case StorageType.SqlGuid:
                         return Guid;
                     case StorageType.SqlXml:
-                        {
-                            // XMLTYPE columns must be returned as string when asking for the CLS value
-                            SqlXml data = (SqlXml)_object;
-                            string s = data.Value;
-                            return s;
-                        }
+                        return GetSqlXmlValue();
                     case StorageType.Date:
                         return DateTime;
                     case StorageType.DateTime2:
@@ -1086,6 +1081,17 @@ namespace Microsoft.Data.SqlClient
                 }
                 return null; // need to return the value as an object of some CLS type
             }
+        }
+
+        private object GetSqlXmlValue()
+        {
+            if (!LocalAppContextSwitches.UseSqlXml)
+                throw SqlReliabilityUtil.SqlXmlTypeDisabled();
+
+            // XMLTYPE columns must be returned as string when asking for the CLS value
+            SqlXml data = (SqlXml)_object;
+            string s = data.Value;
+            return s;
         }
 
         internal Type GetTypeFromStorageType(bool isSqlType)

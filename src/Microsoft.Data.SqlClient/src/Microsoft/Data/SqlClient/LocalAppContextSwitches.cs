@@ -13,10 +13,12 @@ namespace Microsoft.Data.SqlClient
         internal const string MakeReadAsyncBlockingString = @"Switch.Microsoft.Data.SqlClient.MakeReadAsyncBlocking";
         internal const string LegacyRowVersionNullString = @"Switch.Microsoft.Data.SqlClient.LegacyRowVersionNullBehavior";
         internal const string SuppressInsecureTLSWarningString = @"Switch.Microsoft.Data.SqlClient.SuppressInsecureTLSWarning";
+        internal const string UseSqlXmlString = @"Switch.Microsoft.Data.SqlClient.SqlXmlSupport";
 
         private static bool s_makeReadAsyncBlocking;
         private static bool? s_LegacyRowVersionNullBehavior;
         private static bool? s_SuppressInsecureTLSWarning;
+        private static bool s_useSqlXml;
 
 #if !NETFRAMEWORK
         static LocalAppContextSwitches()
@@ -73,6 +75,15 @@ namespace Microsoft.Data.SqlClient
                     s_LegacyRowVersionNullBehavior = result;
                 }
                 return s_LegacyRowVersionNullBehavior.Value;
+            }
+        }
+
+        public static bool UseSqlXml
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                return AppContext.TryGetSwitch(UseSqlXmlString, out s_useSqlXml) ? s_useSqlXml : false;
             }
         }
     }

@@ -4635,4 +4635,7 @@
   <data name="SNI_PlatformNotSupportedNetFx" xml:space="preserve">
     <value>The '{0}' platform is not supported when targeting .NET Framework.</value>
   </data>
+  <data name="SQL_SqlXmlColumnSupportDisabled" xml:space="preserve">
+    <value>SqlXml column type support disabled via 'Switch.Microsoft.Data.SqlClient.SqlXmlSupport' switch.</value>
+  </data>
 </root>

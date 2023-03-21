@@ -21,13 +21,13 @@ namespace Microsoft.Data.SqlClient
         }
 
         internal const string DisableTNIRByDefaultString = @"Switch.Microsoft.Data.SqlClient.DisableTNIRByDefaultInConnectionString";
-        private static bool _disableTNIRByDefault;
+        private static bool _useSqlXmlDefault;
         public static bool DisableTNIRByDefault
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                return AppContext.TryGetSwitch(DisableTNIRByDefaultString, out _disableTNIRByDefault) ? _disableTNIRByDefault : false;
+                return AppContext.TryGetSwitch(DisableTNIRByDefaultString, out _useSqlXmlDefault) ? _useSqlXmlDefault : false;
             }
         }
     }

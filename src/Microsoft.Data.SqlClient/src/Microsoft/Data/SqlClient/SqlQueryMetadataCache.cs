@@ -23,7 +23,7 @@ namespace Microsoft.Data.SqlClient
         const int CacheTrimThreshold = 300; // Threshold above the cache size when we start trimming.
 
         private readonly MemoryCache _cache;
-        private static readonly SqlQueryMetadataCache s_singletonInstance = new();
+        private static readonly SqlQueryMetadataCache s_singletonInstance = new(CreateDefaultCache());
         private int _inTrim = 0;
         private long _cacheHits = 0;
         private long _cacheMisses = 0;
@@ -32,9 +32,17 @@ namespace Microsoft.Data.SqlClient
         private bool _sleepOnTrim = false;
 #endif
 
-        private SqlQueryMetadataCache()
+        private SqlQueryMetadataCache(MemoryCache cache)
         {
-            _cache = new MemoryCache("SqlQueryMetadataCache");
+            _cache = cache;
+        }
+
+        private static MemoryCache CreateDefaultCache()
+        {
+            if (!LocalAppContextSwitches.UseSqlXml)
+                return null;
+
+            return new MemoryCache("SqlQueryMetadataCache");
         }
 
         internal static SqlQueryMetadataCache GetInstance()
@@ -248,6 +256,11 @@ namespace Microsoft.Data.SqlClient
         /// </summary>
         internal void InvalidateCacheEntry(SqlCommand sqlCommand)
         {
+            if (!SqlConnection.ColumnEncryptionQueryMetadataCacheEnabled)
+            {
+                return;
+            }
+
             (string cacheLookupKey, string enclaveLookupKey) = GetCacheLookupKeysFromSqlCommand(sqlCommand);
             if (cacheLookupKey is null)
             {

@@ -118,6 +118,9 @@ namespace Microsoft.Data.SqlClient
 
         private static T FetchConfigurationSection<T>(string name)
         {
+            if (!LocalAppContextSwitches.UseSqlXml)
+                return default;
+
             Type t = typeof(T);
             object section = ConfigurationManager.GetSection(name);
             if (null != section)

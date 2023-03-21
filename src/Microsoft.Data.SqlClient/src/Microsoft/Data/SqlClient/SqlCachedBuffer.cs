@@ -103,6 +103,9 @@ namespace Microsoft.Data.SqlClient
 
         override public string ToString()
         {
+            if (!LocalAppContextSwitches.UseSqlXml)
+                throw SqlReliabilityUtil.SqlXmlTypeDisabled();
+
             if (IsNull)
             {
                 throw new SqlNullValueException();
@@ -129,6 +132,9 @@ namespace Microsoft.Data.SqlClient
 
         internal SqlXml ToSqlXml()
         {
+            if (!LocalAppContextSwitches.UseSqlXml)
+                throw SqlReliabilityUtil.SqlXmlTypeDisabled();
+
             SqlXml sx = new(ToStream());
             return sx;
         }

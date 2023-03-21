@@ -550,7 +550,7 @@ namespace Microsoft.Data.SqlClient
                     comVal = ((SqlMoney)sqlVal).Value;
                     break;
                 case SqlXml:
-                    comVal = ((SqlXml)sqlVal).Value;
+                    comVal = GetComValueFromSqlXml(sqlVal);
                     break;
                 default:
                     AssertIsUserDefinedTypeInstance(sqlVal, "unknown SqlType class stored in sqlVal");
@@ -558,6 +558,14 @@ namespace Microsoft.Data.SqlClient
             }
 
             return comVal;
+        }
+
+        private static object GetComValueFromSqlXml(object sqlVal)
+        {
+            if (!LocalAppContextSwitches.UseSqlXml)
+                throw SqlReliabilityUtil.SqlXmlTypeDisabled();
+
+            return ((SqlXml)sqlVal).Value;
         }
 
         /// <summary>
@@ -636,6 +644,9 @@ namespace Microsoft.Data.SqlClient
                         sqlVal = new SqlDateTime((DateTime)comVal);
                         break;
                     case XmlReader:
+                        if (!LocalAppContextSwitches.UseSqlXml)
+                            throw SqlReliabilityUtil.SqlXmlTypeDisabled();
+
                         sqlVal = new SqlXml((XmlReader)comVal);
                         break;
                     case TimeSpan:

@@ -20,6 +20,9 @@ namespace Microsoft.Data.SqlClient
         /// <returns>The specified `T` object or default value of `T` if the section doesn't exist.</returns>
         public static T FetchConfigurationSection<T>(string name)
         {
+            if (!LocalAppContextSwitches.UseSqlXml)
+                return default;
+
             string methodName = nameof(FetchConfigurationSection);
 
             object section = null;

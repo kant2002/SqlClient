@@ -511,16 +511,7 @@ namespace Microsoft.Data.SqlClient.Server
                 SqlString stringValue;
                 if (metaData.SqlDbType == SqlDbType.Xml)
                 {
-                    SqlXml xmlValue = GetSqlXml_Unchecked(sink, getters, ordinal, null);
-
-                    if (xmlValue.IsNull)
-                    {
-                        result = SqlChars.Null;
-                    }
-                    else
-                    {
-                        result = new SqlChars(xmlValue.Value.ToCharArray());
-                    }
+                    result = GetSqlXmlChars(sink, getters, ordinal);
                 }
                 else
                 {
@@ -540,6 +531,26 @@ namespace Microsoft.Data.SqlClient.Server
                         result = new SqlChars(stringValue.Value.ToCharArray());
                     }
                 }
+            }
+
+            return result;
+        }
+
+        private static SqlChars GetSqlXmlChars(SmiEventSink_Default sink, ITypedGettersV3 getters, int ordinal)
+        {
+            if (!LocalAppContextSwitches.UseSqlXml)
+                throw SqlReliabilityUtil.SqlXmlTypeDisabled();
+
+            SqlChars result;
+            SqlXml xmlValue = GetSqlXml_Unchecked(sink, getters, ordinal, null);
+
+            if (xmlValue.IsNull)
+            {
+                result = SqlChars.Null;
+            }
+            else
+            {
+                result = new SqlChars(xmlValue.Value.ToCharArray());
             }
 
             return result;
@@ -811,16 +822,7 @@ namespace Microsoft.Data.SqlClient.Server
             }
             else if (SqlDbType.Xml == metaData.SqlDbType)
             {
-                SqlXml xmlValue = GetSqlXml_Unchecked(sink, getters, ordinal, null);
-
-                if (xmlValue.IsNull)
-                {
-                    result = SqlString.Null;
-                }
-                else
-                {
-                    result = new SqlString(xmlValue.Value);
-                }
+                result = GetSqlXmlString(sink, getters, ordinal);
             }
             else
             {
@@ -835,8 +837,28 @@ namespace Microsoft.Data.SqlClient.Server
             return result;
         }
 
+        private static SqlString GetSqlXmlString(SmiEventSink_Default sink, ITypedGettersV3 getters, int ordinal)
+        {
+            if (!LocalAppContextSwitches.UseSqlXml)
+                throw SqlReliabilityUtil.SqlXmlTypeDisabled();
+
+            SqlXml xmlValue = GetSqlXml_Unchecked(sink, getters, ordinal, null);
+
+            if (xmlValue.IsNull)
+            {
+                return SqlString.Null;
+            }
+            else
+            {
+                return new SqlString(xmlValue.Value);
+            }
+        }
+
         internal static SqlXml GetSqlXml(SmiEventSink_Default sink, ITypedGettersV3 getters, int ordinal, SmiMetaData metaData, SmiContext context)
         {
+            if (!LocalAppContextSwitches.UseSqlXml)
+                throw SqlReliabilityUtil.SqlXmlTypeDisabled();
+
             SqlXml result;
             if (CanAccessGetterDirectly(metaData, ExtendedClrTypeCode.SqlXml))
             {
@@ -1027,7 +1049,7 @@ namespace Microsoft.Data.SqlClient.Server
                         result = GetValue(sink, getters, ordinal, metaData, context);
                         break;
                     case SqlDbType.Xml:
-                        result = GetSqlXml_Unchecked(sink, getters, ordinal, context).Value;
+                        result = GetSqlXmlValue(sink, getters, ordinal, context);
                         break;
                     case SqlDbType.Udt:
                         result = GetUdt_LengthChecked(sink, getters, ordinal, metaData);
@@ -1036,6 +1058,14 @@ namespace Microsoft.Data.SqlClient.Server
             }
 
             return result;
+        }
+
+        private static string GetSqlXmlValue(SmiEventSink_Default sink, ITypedGettersV3 getters, int ordinal, SmiContext context)
+        {
+            if (!LocalAppContextSwitches.UseSqlXml)
+                throw SqlReliabilityUtil.SqlXmlTypeDisabled();
+
+            return GetSqlXml_Unchecked(sink, getters, ordinal, context).Value;
         }
 
         // dealing with v200 SMI
@@ -1479,6 +1509,9 @@ namespace Microsoft.Data.SqlClient.Server
 
         internal static void SetSqlXml(SmiEventSink_Default sink, ITypedSettersV3 setters, int ordinal, SmiMetaData metaData, SqlXml value)
         {
+            if (!LocalAppContextSwitches.UseSqlXml)
+                throw SqlReliabilityUtil.SqlXmlTypeDisabled();
+
             ThrowIfInvalidSetterAccess(metaData, ExtendedClrTypeCode.SqlXml);
             SetSqlXml_Unchecked(sink, setters, ordinal, value);
         }
@@ -3163,6 +3196,9 @@ namespace Microsoft.Data.SqlClient.Server
 
         private static SqlXml GetSqlXml_Unchecked(SmiEventSink_Default sink, ITypedGettersV3 getters, int ordinal, SmiContext context)
         {
+            if (!LocalAppContextSwitches.UseSqlXml)
+                throw SqlReliabilityUtil.SqlXmlTypeDisabled();
+
             Debug.Assert(!IsDBNull_Unchecked(sink, getters, ordinal));
 #if NETFRAMEWORK
             // allow context to be null so strongly-typed getters can use
@@ -3686,6 +3722,9 @@ namespace Microsoft.Data.SqlClient.Server
 
         private static void SetSqlXml_Unchecked(SmiEventSink_Default sink, ITypedSettersV3 setters, int ordinal, SqlXml value)
         {
+            if (!LocalAppContextSwitches.UseSqlXml)
+                throw SqlReliabilityUtil.SqlXmlTypeDisabled();
+
             if (value.IsNull)
             {
                 setters.SetDBNull(sink, ordinal);
@@ -3699,6 +3738,9 @@ namespace Microsoft.Data.SqlClient.Server
 
         private static void SetXmlReader_Unchecked(SmiEventSink_Default sink, ITypedSettersV3 setters, int ordinal, XmlReader xmlReader)
         {
+            if (!LocalAppContextSwitches.UseSqlXml)
+                throw SqlReliabilityUtil.SqlXmlTypeDisabled();
+
             // set up writer
             XmlWriterSettings WriterSettings = new XmlWriterSettings
             {

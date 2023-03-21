@@ -1266,6 +1266,10 @@ namespace Microsoft.Data.SqlClient
             SqlException exc = SqlException.CreateException(errors, "", internalConnection, innerException);
             return exc;
         }
+        internal static Exception SqlXmlTypeDisabled()
+        {
+            return ADP.NotSupported(Strings.SQL_SqlXmlColumnSupportDisabled);
+        }
 
         internal static Exception BatchedUpdatesNotAvailableOnContextConnection()
         {

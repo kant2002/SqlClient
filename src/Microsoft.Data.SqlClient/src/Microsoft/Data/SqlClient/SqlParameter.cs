@@ -1138,10 +1138,13 @@ namespace Microsoft.Data.SqlClient
                 return;
             }
 
-            if (value is XmlDataFeed xmlFeed)
+            if (LocalAppContextSwitches.UseSqlXml)
             {
-                CoercedValue = MetaType.GetStringFromXml(xmlFeed._source);
-                return;
+                if (value is XmlDataFeed xmlFeed)
+                {
+                    CoercedValue = MetaType.GetStringFromXml(xmlFeed._source);
+                    return;
+                }
             }
 
             // We should have returned before reaching here
@@ -2196,23 +2199,15 @@ namespace Microsoft.Data.SqlClient
                         // For Xml data, destination Type is always string
                         if (currentType == typeof(SqlXml))
                         {
-                            value = MetaType.GetStringFromXml((XmlReader)(((SqlXml)value).CreateReader()));
+                            value = GetValueFromSqlXml(value);
                         }
                         else if (currentType == typeof(SqlString))
                         {
                             typeChanged = false;   // Do nothing
                         }
-                        else if (typeof(XmlReader).IsAssignableFrom(currentType))
+                        else if (CanHaveXmlFeed(currentType))
                         {
-                            if (allowStreaming)
-                            {
-                                coercedToDataFeed = true;
-                                value = new XmlDataFeed((XmlReader)value);
-                            }
-                            else
-                            {
-                                value = MetaType.GetStringFromXml((XmlReader)value);
-                            }
+                            value = CoerceXmlFeed(value, ref coercedToDataFeed, allowStreaming);
                         }
                         else if (currentType == typeof(char[]))
                         {
@@ -2298,6 +2293,38 @@ namespace Microsoft.Data.SqlClient
             Debug.Assert(allowStreaming || !coercedToDataFeed, "Streaming is not allowed, but type was coerced into a data feed");
             Debug.Assert(value.GetType() == currentType ^ typeChanged, "Incorrect value for typeChanged");
             return value;
+        }
+
+        private static object CoerceXmlFeed(object value, ref bool coercedToDataFeed, bool allowStreaming)
+        {
+            if (!LocalAppContextSwitches.UseSqlXml)
+                throw SqlReliabilityUtil.SqlXmlTypeDisabled();
+
+            if (allowStreaming)
+            {
+                coercedToDataFeed = true;
+                return new XmlDataFeed((XmlReader)value);
+            }
+            else
+            {
+                return MetaType.GetStringFromXml((XmlReader)value);
+            }
+        }
+
+        private static bool CanHaveXmlFeed(Type currentType)
+        {
+            if (!LocalAppContextSwitches.UseSqlXml)
+                throw SqlReliabilityUtil.SqlXmlTypeDisabled();
+
+            return typeof(XmlReader).IsAssignableFrom(currentType);
+        }
+
+        private static string GetValueFromSqlXml(object value)
+        {
+            if (!LocalAppContextSwitches.UseSqlXml)
+                throw SqlReliabilityUtil.SqlXmlTypeDisabled();
+
+            return MetaType.GetStringFromXml((XmlReader)(((SqlXml)value).CreateReader()));
         }
 
         private static int StringSize(object value, bool isSqlType)

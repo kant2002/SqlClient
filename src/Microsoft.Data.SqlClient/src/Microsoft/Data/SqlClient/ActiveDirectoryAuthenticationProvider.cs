@@ -148,24 +148,24 @@ namespace Microsoft.Data.SqlClient
 
             if (parameters.AuthenticationMethod == SqlAuthenticationMethod.ActiveDirectoryDefault)
             {
-                DefaultAzureCredentialOptions defaultAzureCredentialOptions = new()
-                {
-                    AuthorityHost = new Uri(authority),
-                    SharedTokenCacheTenantId = audience,
-                    VisualStudioCodeTenantId = audience,
-                    VisualStudioTenantId = audience,
-                    ExcludeInteractiveBrowserCredential = true // Force disabled, even though it's disabled by default to respect driver specifications.
-                };
+                //DefaultAzureCredentialOptions defaultAzureCredentialOptions = new()
+                //{
+                //    AuthorityHost = new Uri(authority),
+                //    SharedTokenCacheTenantId = audience,
+                //    VisualStudioCodeTenantId = audience,
+                //    VisualStudioTenantId = audience,
+                //    ExcludeInteractiveBrowserCredential = true // Force disabled, even though it's disabled by default to respect driver specifications.
+                //};
 
-                // Optionally set clientId when available
-                if (clientId is not null)
-                {
-                    defaultAzureCredentialOptions.ManagedIdentityClientId = clientId;
-                    defaultAzureCredentialOptions.SharedTokenCacheUsername = clientId;
-                }
-                AccessToken accessToken = await new DefaultAzureCredential(defaultAzureCredentialOptions).GetTokenAsync(tokenRequestContext, cts.Token).ConfigureAwait(false);
-                SqlClientEventSource.Log.TryTraceEvent("AcquireTokenAsync | Acquired access token for Default auth mode. Expiry Time: {0}", accessToken.ExpiresOn);
-                return new SqlAuthenticationToken(accessToken.Token, accessToken.ExpiresOn);
+                //// Optionally set clientId when available
+                //if (clientId is not null)
+                //{
+                //    defaultAzureCredentialOptions.ManagedIdentityClientId = clientId;
+                //    defaultAzureCredentialOptions.SharedTokenCacheUsername = clientId;
+                //}
+                //AccessToken accessToken = await new DefaultAzureCredential(defaultAzureCredentialOptions).GetTokenAsync(tokenRequestContext, cts.Token).ConfigureAwait(false);
+                //SqlClientEventSource.Log.TryTraceEvent("AcquireTokenAsync | Acquired access token for Default auth mode. Expiry Time: {0}", accessToken.ExpiresOn);
+                //return new SqlAuthenticationToken(accessToken.Token, accessToken.ExpiresOn);
             }
 
             TokenCredentialOptions tokenCredentialOptions = new TokenCredentialOptions() { AuthorityHost = new Uri(authority) };

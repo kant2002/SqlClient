@@ -2253,6 +2253,9 @@ namespace Microsoft.Data.SqlClient
 
         internal long GetStreamingXmlChars(int i, long dataIndex, char[] buffer, int bufferIndex, int length)
         {
+            if (!LocalAppContextSwitches.UseSqlXml)
+                throw SqlReliabilityUtil.SqlXmlTypeDisabled();
+
             SqlStreamingXml localSXml = null;
             if ((_streamingXml != null) && (_streamingXml.ColumnOrdinal != i))
             {
@@ -2473,6 +2476,9 @@ namespace Microsoft.Data.SqlClient
         /// <include file='../../../../../../../doc/snippets/Microsoft.Data.SqlClient/SqlDataReader.xml' path='docs/members[@name="SqlDataReader"]/GetSqlXml/*' />
         virtual public SqlXml GetSqlXml(int i)
         {
+            if (!LocalAppContextSwitches.UseSqlXml)
+                throw SQL.SqlXmlTypeDisabled();
+
             ReadColumn(i);
             SqlXml sx = null;
 
@@ -2855,32 +2861,7 @@ namespace Microsoft.Data.SqlClient
 #endif
             else if (typeof(T) == typeof(XmlReader))
             {
-                // XmlReader only allowed on XML types
-                if (metaData.metaType.SqlDbType != SqlDbType.Xml)
-                {
-                    throw SQL.XmlReaderNotSupportOnColumnType(metaData.column);
-                }
-
-                if (IsCommandBehavior(CommandBehavior.SequentialAccess))
-                {
-                    // Wrap the sequential stream in an XmlReader
-                    _currentStream = new SqlSequentialStream(this, metaData.ordinal);
-                    _lastColumnWithDataChunkRead = metaData.ordinal;
-                    return (T)(object)SqlTypeWorkarounds.SqlXmlCreateSqlXmlReader(_currentStream, closeInput: true, async: isAsync);
-                }
-                else
-                {
-                    if (data.IsNull)
-                    {
-                        // A 'null' stream
-                        return (T)(object)SqlTypeWorkarounds.SqlXmlCreateSqlXmlReader(new MemoryStream(Array.Empty<byte>(), writable: false), closeInput: true, async: isAsync);
-                    }
-                    else
-                    {
-                        // Grab already read data
-                        return (T)(object)data.SqlXml.CreateReader();
-                    }
-                }
+                return (T)(object)GetXmlReaderFieldFromSqlBufferInternal(data, metaData, isAsync);
             }
             else if (typeof(T) == typeof(TextReader))
             {
@@ -2962,20 +2943,7 @@ namespace Microsoft.Data.SqlClient
                     object rawValue = GetSqlValueFromSqlBufferInternal(data, metaData);
                     if (typeof(T) == typeof(SqlString))
                     {
-                        // Special case: User wants SqlString, but we have a SqlXml
-                        // SqlXml can not be typecast into a SqlString, but we need to support SqlString on XML Types - so do a manual conversion
-                        SqlXml xmlValue = rawValue as SqlXml;
-                        if (xmlValue != null)
-                        {
-                            if (xmlValue.IsNull)
-                            {
-                                rawValue = SqlString.Null;
-                            }
-                            else
-                            {
-                                rawValue = new SqlString(xmlValue.Value);
-                            }
-                        }
+                        rawValue = ConvertToSqlXml(rawValue);
                     }
                     return (T)rawValue;
                 }
@@ -2995,6 +2963,62 @@ namespace Microsoft.Data.SqlClient
                         throw SQL.SqlNullValue();
                     }
 
+                }
+            }
+        }
+
+        private static object ConvertToSqlXml(object rawValue)
+        {
+            if (!LocalAppContextSwitches.UseSqlXml)
+                throw SQL.SqlXmlTypeDisabled();
+
+            // Special case: User wants SqlString, but we have a SqlXml
+            // SqlXml can not be typecast into a SqlString, but we need to support SqlString on XML Types - so do a manual conversion
+            SqlXml xmlValue = rawValue as SqlXml;
+            if (xmlValue != null)
+            {
+                if (xmlValue.IsNull)
+                {
+                    rawValue = SqlString.Null;
+                }
+                else
+                {
+                    rawValue = new SqlString(xmlValue.Value);
+                }
+            }
+
+            return rawValue;
+        }
+
+        private object GetXmlReaderFieldFromSqlBufferInternal(SqlBuffer data, _SqlMetaData metaData, bool isAsync)
+        {
+            if (!LocalAppContextSwitches.UseSqlXml)
+                throw SQL.SqlXmlTypeDisabled();
+
+            // XmlReader only allowed on XML types
+            if (metaData.metaType.SqlDbType != SqlDbType.Xml)
+            {
+                throw SQL.XmlReaderNotSupportOnColumnType(metaData.column);
+            }
+
+            if (IsCommandBehavior(CommandBehavior.SequentialAccess))
+            {
+                // Wrap the sequential stream in an XmlReader
+                _currentStream = new SqlSequentialStream(this, metaData.ordinal);
+                _lastColumnWithDataChunkRead = metaData.ordinal;
+                return SqlTypeWorkarounds.SqlXmlCreateSqlXmlReader(_currentStream, closeInput: true, async: isAsync);
+            }
+            else
+            {
+                if (data.IsNull)
+                {
+                    // A 'null' stream
+                    return SqlTypeWorkarounds.SqlXmlCreateSqlXmlReader(new MemoryStream(Array.Empty<byte>(), writable: false), closeInput: true, async: isAsync);
+                }
+                else
+                {
+                    // Grab already read data
+                    return data.SqlXml.CreateReader();
                 }
             }
         }
@@ -5801,5 +5825,8 @@ namespace Microsoft.Data.SqlClient
 
             return new ReadOnlyCollection<DbColumn>(columnSchema);
         }
+
+        // The Linker is also capable of replacing the value of this method when the application is being trimmed.
+        internal static bool UseSqlXml() => LocalAppContextSwitches.UseSqlXml;
     }
 }

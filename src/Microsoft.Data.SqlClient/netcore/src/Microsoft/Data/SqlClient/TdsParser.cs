@@ -10733,12 +10733,7 @@ namespace Microsoft.Data.SqlClient
                             ccb = ((isSqlType) ? ((SqlString)value).Value.Length : ((string)value).Length) * 2;
                             break;
                         case TdsEnums.SQLXMLTYPE:
-                            // Value here could be string or XmlReader
-                            if (value is XmlReader)
-                            {
-                                value = MetaType.GetStringFromXml((XmlReader)value);
-                            }
-                            ccb = ((isSqlType) ? ((SqlString)value).Value.Length : ((string)value).Length) * 2;
+                            ccb = WriteBulkCopyXmlType(ref value, isSqlType);
                             break;
 
                         default:
@@ -10826,6 +10821,21 @@ namespace Microsoft.Data.SqlClient
                 }
             }
             return resultTask;
+        }
+
+        private static int WriteBulkCopyXmlType(ref object value, bool isSqlType)
+        {
+            if (!LocalAppContextSwitches.UseSqlXml)
+                throw SqlReliabilityUtil.SqlXmlTypeDisabled();
+
+            int ccb;
+            // Value here could be string or XmlReader
+            if (value is XmlReader)
+            {
+                value = MetaType.GetStringFromXml((XmlReader)value);
+            }
+            ccb = ((isSqlType) ? ((SqlString)value).Value.Length : ((string)value).Length) * 2;
+            return ccb;
         }
 
         // This is in its own method to avoid always allocating the lambda in WriteBulkCopyValue
@@ -11596,7 +11606,15 @@ namespace Microsoft.Data.SqlClient
             }
         }
 
-        private async Task WriteXmlFeed(XmlDataFeed feed, TdsParserStateObject stateObj, bool needBom, Encoding encoding, int size)
+        private Task WriteXmlFeed(XmlDataFeed feed, TdsParserStateObject stateObj, bool needBom, Encoding encoding, int size)
+        {
+            if (!LocalAppContextSwitches.UseSqlXml)
+                throw SqlReliabilityUtil.SqlXmlTypeDisabled();
+
+            return WriteXmlFeedInternal(feed, stateObj, needBom, encoding, size);
+        }
+
+        private async Task WriteXmlFeedInternal(XmlDataFeed feed, TdsParserStateObject stateObj, bool needBom, Encoding encoding, int size)
         {
             byte[] preambleToSkip = null;
             if (!needBom)

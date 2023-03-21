@@ -283,6 +283,9 @@ namespace Microsoft.Data.SqlClient.Server
                 }
                 else
                 {
+                    if (!LocalAppContextSwitches.UseSqlXml)
+                        throw SqlReliabilityUtil.SqlXmlTypeDisabled();
+
                     // Xml may be stored as byte array, yet have GetString called against it.
                     Debug.Assert(StorageType.ByteArray == _type, "Wrong storage type: " + _type);
                     System.IO.Stream byteStream = new System.IO.MemoryStream((byte[])_object, false);

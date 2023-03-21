@@ -89,23 +89,23 @@ namespace Microsoft.Data.SqlClient
             {
                 switch (attestationProtocol)
                 {
-                    case SqlConnectionAttestationProtocol.AAS:
-                        AzureAttestationEnclaveProvider azureAttestationEnclaveProvider = new AzureAttestationEnclaveProvider();
-                        s_enclaveProviders[attestationProtocol] = azureAttestationEnclaveProvider;
-                        sqlColumnEncryptionEnclaveProvider = s_enclaveProviders[attestationProtocol];
-                        break;
+                    //case SqlConnectionAttestationProtocol.AAS:
+                    //    AzureAttestationEnclaveProvider azureAttestationEnclaveProvider = new AzureAttestationEnclaveProvider();
+                    //    s_enclaveProviders[attestationProtocol] = azureAttestationEnclaveProvider;
+                    //    sqlColumnEncryptionEnclaveProvider = s_enclaveProviders[attestationProtocol];
+                    //    break;
 
-                    case SqlConnectionAttestationProtocol.HGS:
-                        HostGuardianServiceEnclaveProvider hostGuardianServiceEnclaveProvider = new HostGuardianServiceEnclaveProvider();
-                        s_enclaveProviders[attestationProtocol] = hostGuardianServiceEnclaveProvider;
-                        sqlColumnEncryptionEnclaveProvider = s_enclaveProviders[attestationProtocol];
-                        break;
+                    //case SqlConnectionAttestationProtocol.HGS:
+                    //    HostGuardianServiceEnclaveProvider hostGuardianServiceEnclaveProvider = new HostGuardianServiceEnclaveProvider();
+                    //    s_enclaveProviders[attestationProtocol] = hostGuardianServiceEnclaveProvider;
+                    //    sqlColumnEncryptionEnclaveProvider = s_enclaveProviders[attestationProtocol];
+                    //    break;
 
-                    case SqlConnectionAttestationProtocol.None:
-                        NoneAttestationEnclaveProvider noneAttestationEnclaveProvider = new NoneAttestationEnclaveProvider();
-                        s_enclaveProviders[attestationProtocol] = noneAttestationEnclaveProvider;
-                        sqlColumnEncryptionEnclaveProvider = s_enclaveProviders[attestationProtocol];
-                        break;
+                    //case SqlConnectionAttestationProtocol.None:
+                    //    NoneAttestationEnclaveProvider noneAttestationEnclaveProvider = new NoneAttestationEnclaveProvider();
+                    //    s_enclaveProviders[attestationProtocol] = noneAttestationEnclaveProvider;
+                    //    sqlColumnEncryptionEnclaveProvider = s_enclaveProviders[attestationProtocol];
+                    //    break;
 
                     default:
                         break;

@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<linker>
+  <assembly fullname="Microsoft.Data.SqlClient">
+    <type fullname="Microsoft.Data.SqlClient.LocalAppContextSwitches">
+      <method signature="System.Boolean get_UseSqlXml()" body="stub" value="false" feature="Switch.Microsoft.Data.SqlClient.SqlXmlSupport" featurevalue="false" />
+    </type>
+    <type fullname="Microsoft.Data.SqlClient.SqlConnection">
+      <method signature="System.Boolean get_ColumnEncryptionQueryMetadataCacheEnabled()" body="stub" value="false" feature="Switch.Microsoft.Data.SqlClient.SqlXmlSupport" featurevalue="false" />
+    </type>
+    <!--<type fullname="Microsoft.Data.SqlClient.SqlQueryMetadataCache">
+      <method signature="System.Runtime.Caching.MemoryCache CreateDefaultCache()" body="stub" feature="Switch.Microsoft.Data.SqlClient.SqlXmlSupport" featurevalue="false" />
+    </type>-->
+  </assembly>
+</linker>
